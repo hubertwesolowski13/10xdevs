@@ -20,6 +20,7 @@ When introducing changes to the project, always follow the directory structure b
 - `./wardrobe-assistant/` - mobile app root directory
 - `./wardrobe-assistant/app` - expo folder-structure-based tabs routing
 - `./wardrobe-assistant/src/assets` - static internal assets
+`./wardrobe-assistant/src/types` - type definitions
 - `./wardrobe-assistant/src/components` - React components to build the UI
 - `./wardrobe-assistant/src/constants` - constants
 - `./wardrobe-assistant/src/hooks` - React hooks

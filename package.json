@@ -7,8 +7,11 @@
     "lint:fix": "eslint -c ./eslint.config.mjs . --fix",
     "lint:app": "pnpm --filter wardrobe-assistant run lint",
     "lint:api": "pnpm --filter wardrobe-assistant-api run lint",
+    "start:app:web": "pnpm --filter wardrobe-assistant run web",
+    "start:api": "pnpm --filter wardrobe-assistant-api run start:dev",
     "format": "prettier --config ./.prettierrc --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
-    "format:check": "prettier --config ./.prettierrc --check \"**/*.{js,jsx,ts,tsx,json,md}\""
+    "format:check": "prettier --config ./.prettierrc --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
