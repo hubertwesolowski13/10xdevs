@@ -5,6 +5,5 @@
   "semi": false,
   "printWidth": 120,
   "useTabs": false,
-  "bracketSpacing": true,
-  "objectWrap": "collapse"
+  "bracketSpacing": true
 }

@@ -1,0 +1,24 @@
+{
+  "name": "10xdevs-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "lint": "eslint -c ./eslint.config.mjs .",
+    "lint:fix": "eslint -c ./eslint.config.mjs . --fix",
+    "lint:app": "pnpm --filter wardrobe-assistant run lint",
+    "lint:api": "pnpm --filter wardrobe-assistant-api run lint",
+    "format": "prettier --config ./.prettierrc --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "format:check": "prettier --config ./.prettierrc --check \"**/*.{js,jsx,ts,tsx,json,md}\""
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "eslint": "^9.25.0",
+    "eslint-config-expo": "~10.0.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-prettier": "^5.2.2",
+    "globals": "^16.0.0",
+    "prettier": "^3.4.2",
+    "typescript-eslint": "^8.20.0"
+  },
+  "packageManager": "pnpm@9.12.0"
+}
