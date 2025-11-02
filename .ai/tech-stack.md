@@ -1,16 +1,25 @@
-Analysis: Technologia oparta na React Native z Expo oraz NestJS i bazą Supabase wydaje się wystarczająco elastyczna do szybkiego dostarczenia MVP, co jest kluczowe dla realizacji funkcjonalności MVP opisanych w PRD. Stos ten umożliwia skalowalność i izolatację poszczególnych komponentów w projekcie przy relatywnie niskich kosztach utrzymania, jednak warto rozważyć, czy złożoność wynikająca z zastosowania NestJS nie jest nadmierna w fazie MVP oraz czy Supabase spełni wymogi bezpieczeństwa i wydajności przy wzroście użytkowników.
-Steps:
-1. Odpowiedz na pytania zawarte w analizie, uwzględniając kontekst wymagań z PRD oraz porównując zastosowaną technologię z możliwymi alternatywami.
-2. Podkreśl mocne strony zastosowanego technologicznego stacku, takie jak szybkość wdrożenia MVP, potencjał skalowalności i modularność.
-3. Wskaż potencjalne ryzyka lub obszary, gdzie stos mógłby być nadmiernie złożony, oraz rozważ alternatywne, prostsze rozwiązania.
-4. Zakończ analizę wskazaniem, że odpowiedzialne zarządzanie bezpieczeństwem będzie wymagało szczególnej uwagi, mimo że użyte technologie oferują niezbędne funkcjonalności.
+Frontend: Expo, React, React Native dla komponentów interaktywnych
 
-Odpowiedź:
-1. Szybkie dostarczenie MVP: Zastosowanie React Native + Expo pozwala na szybkie prototypowanie i wdrażanie, co jest korzystne przy ograniczonym czasie na MVP. Gluestack-ui umożliwia spójność interfejsu użytkownika, co dodatkowo przyspiesza wdrożenie.
-2. Skalowalność: NestJS, jako framework oparty na TypeScript, jest bardzo skalowalny i nadaje się do budowy mikroserwisów wraz z wyraźnym podziałem logiki aplikacji. Supabase oferuje skalowalne rozwiązania bazodanowe oparte na PostgreSQL oraz dodatkowe funkcjonalności, co czyni cały stos odpowiednim dla rosnącego projektu.
-3. Koszt utrzymania i rozwoju: Zarówno React Native, NestJS, jak i Supabase są rozwijane w społecznościach open-source, co może przyczynić się do obniżenia kosztów utrzymania. Z drugiej strony, wybór wielu narzędzi wymaga integracji oraz monitorowania potencjalnych kosztów związanych z autoryzacją, skalowaniem i bezpieczeństwem.
-4. Złożoność rozwiązania: W początkowej fazie produktu, rozwiązanie oparte na NestJS może być bardziej złożone od niektórych lekkich alternatyw, takich jak serwerless lub nawet Firebase. Warto przeanalizować, czy wszystkie funkcjonalności oferowane przez NestJS są niezbędne w MVP, czy też można użyć prostszych rozwiązań.
-5. Możliwość zastosowania prostszych rozwiązań: Alternatywą może być zastosowanie Firebase lub innych platform backendowych, które oferują gotowe funkcje autoryzacji i bazy danych, co może uprościć architekturę na etapie MVP.
-6. Bezpieczeństwo: Technologia NestJS wraz z Supabase umożliwia implementację zaawansowanych mechanizmów zabezpieczeń, ale wymaga to starannego konfigurowania i monitorowania. Na każdym etapie wdrożenia należy zadbać o odpowiednią ochronę danych użytkowników oraz zabezpieczenie komunikacji między frontendem a backendem.
+- Expo zapewnia wsparcie dla aplikacji mobilnych oraz ułatwia budowanie aplikacji bez konieczności pisania kodu natywnego
+- React 19 zapewni interaktywność tam gdzie jest konieczna
+- TypeScript 5 dla statycznego typowania kodu i lepszego wsparcie IDE
+- gluestack-ui zapewni spójność interfejsu użytkownika oraz baze komponentów do budowania widoków
+- Tailwind pomoże w wygodnym stylowaniu aplikacji i jest wspierany przez gluestack-ui
 
-Podsumowując, wybrany stos technologiczny wydaje się adekwatny do potrzeb MVP, oferując dobrą równowagę między szybkością wdrożenia, skalowalnością i kosztami, jednak wymaga świadomej oceny pod kątem złożoności rozwiązania i ewentualnych uproszczeń w początkowej fazie rozwoju produktu.
+Backend: Supabase jako kompleksowe rozwiązanie backendowe i bazy danych
+
+- Zapewnia Postgres jako baza danych
+- Zapewnia API REST dla aplikacji
+- Zapewnia SDK w wielu językach, które posłużą jako Backend-as-a-Service
+- Jest to rozwiązanie Open Source ktore mozna hostowac lokalnie lub na własnym serwerze
+- Posiada wbudowaną autoryzację i autentycję użytkowników
+
+AI: Komunikacja z modelami AI przez usługę Openrouter.ai
+
+- Dostęp do szerokiej gamy modeli AI (OpenAI, Anthropic, Google etc.), które pozwolą nam znaleźć rozwiązanie zapewniające wysoką efektywność i niskie koszta
+- Pozwala na ustawianie limitów finansowych ka klucze API
+
+CI/CD i Hosting:
+
+- GitHub Actions do tworzenia pipelineow CI / CD
+- DigitalOcean do hostowania aplikacji za posrednictwem obrazu Docker

@@ -4,7 +4,7 @@ Rule Type: Always
 
 # AI Rules for wardrobe-assistant
 
-Project allows users to create and manage their wardrobe and based on that create a personalized creations. 
+Project allows users to create and manage their wardrobe and based on that create a personalized creations.
 
 ## Tech Stack
 
@@ -20,7 +20,7 @@ When introducing changes to the project, always follow the directory structure b
 - `./wardrobe-assistant/` - mobile app root directory
 - `./wardrobe-assistant/app` - expo folder-structure-based tabs routing
 - `./wardrobe-assistant/src/assets` - static internal assets
-`./wardrobe-assistant/src/types` - type definitions
+- `./wardrobe-assistant/src/types` - type definitions
 - `./wardrobe-assistant/src/components` - React components to build the UI
 - `./wardrobe-assistant/src/constants` - constants
 - `./wardrobe-assistant/src/hooks` - React hooks
@@ -44,10 +44,11 @@ When modifying the directory structure, always update this section.
 - Implement proper error logging and user-friendly error messages.
 - Consider using custom error types or error factories for consistent error handling.
 
-
 ---
+
 Rule Type: Auto Attached
-globs: '**/*.tsx, **/*.jsx'
+globs: '**/\*.tsx, **/\*.jsx'
+
 ---
 
 ## BACKEND
@@ -106,7 +107,6 @@ globs: '**/*.tsx, **/*.jsx'
 - Use Query Keys structuring pattern ([entity, params]) for better organization and automatic refetching
 - Implement query invalidation strategies to keep data fresh after mutations
 
-
 ### Guidelines for STYLING
 
 #### TAILWIND
@@ -121,7 +121,6 @@ globs: '**/*.tsx, **/*.jsx'
 - Implement dark mode with the dark: variant
 - Use responsive variants (sm:, md:, lg:, etc.) for adaptive designs
 - Leverage state variants (hover:, focus:, active:, etc.) for interactive elements
-
 
 ### Guidelines for ACCESSIBILITY
 
@@ -154,3 +153,17 @@ globs: '**/*.tsx, **/*.jsx'
 - Implement code coverage reporting with meaningful targets
 - Use mockResolvedValue and mockRejectedValue for async testing
 - Leverage fake timers for testing time-dependent functionality
+
+## CODING_PRACTICES
+
+### Guidelines for ARCHITECTURE
+
+#### MONOREPO
+
+- Configure workspace-aware tooling to optimize build and test processes
+- Implement clear package boundaries with explicit dependencies between packages
+- Use consistent versioning strategy across all packages (independent or lockstep)
+- Configure CI/CD to build and test only affected packages for efficiency
+- Implement shared configurations for linting, testing, and {{development_tooling}}
+- Use code generators to maintain consistency across similar packages or modules
+- Use Husky for Git hooks to enforce code quality and prevent bad commits

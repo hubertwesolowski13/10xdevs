@@ -1,7 +1,9 @@
 ### Główny problem
+
 Sporządzenie spójnej kolorystycznie i w odpowienim stylu kreacji, które uzytkownik ma w garderobie jest czasochłonne i często problematyczne z powodu ciągłego oglądania tej samej zawartości szafy.
 
 ### Najmniejszy zestaw funkcjonalności
+
 - Prosty system kont użytkowników
 - Przeglądanie, usuwanie, dodawanie i aktualizacja odzieży posiadanej w garderobie
 - Zapisywanie i usuwanie sprawdzonych / zaakceptowanych kreacji do kolekcji kreacji
@@ -10,6 +12,7 @@ Sporządzenie spójnej kolorystycznie i w odpowienim stylu kreacji, które uzytk
 - Aplikacja mobilna (React Native, tylko Android)
 
 ### Co NIE wchodzi w zakres MVP
+
 - Propozycje uzupełnienia garderoby w celu stworzenia ciekawszych kreacji, które w danym momencie nie są możliwe z powodu braku niektórych elementów garderoby.
 - Udostepnianie kreacji
 - Udostepnianie garderoby
@@ -19,6 +22,6 @@ Sporządzenie spójnej kolorystycznie i w odpowienim stylu kreacji, które uzytk
 - Logowanie SSO
 
 ### Kryteria sukcesu
+
 - 70% wygenerowanych kreacji jest zaakceptowanych przez użytkownika i dodanych do kolekcji kreacji.
 - 60% użytkowników korzysta z aplikacji przynajmniej raz w tygodniu
-
