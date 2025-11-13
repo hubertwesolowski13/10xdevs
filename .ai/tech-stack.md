@@ -6,13 +6,13 @@ Frontend: Expo, React, React Native dla komponentów interaktywnych
 - gluestack-ui zapewni spójność interfejsu użytkownika oraz baze komponentów do budowania widoków
 - Tailwind pomoże w wygodnym stylowaniu aplikacji i jest wspierany przez gluestack-ui
 
-Backend: Supabase jako kompleksowe rozwiązanie backendowe i bazy danych
+Backend: NestJS i Supabase jako rozwiązanie backendowe i bazy danych
 
-- Zapewnia Postgres jako baza danych
-- Zapewnia API REST dla aplikacji
-- Zapewnia SDK w wielu językach, które posłużą jako Backend-as-a-Service
+- Supabase zapewnia Postgres jako baza danych
+- Supabase zapewnia SDK w wielu językach, które posłużą jako wsparcie dla aplikacji NestJS
 - Jest to rozwiązanie Open Source ktore mozna hostowac lokalnie lub na własnym serwerze
 - Posiada wbudowaną autoryzację i autentycję użytkowników
+- NestJS zapewnia API REST dla aplikacji
 
 AI: Komunikacja z modelami AI przez usługę Openrouter.ai
 

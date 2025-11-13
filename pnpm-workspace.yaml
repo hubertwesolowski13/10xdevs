@@ -1,0 +1,4 @@
+packages:
+  - 'wardrobe-assistant-app'
+  - 'wardrobe-assistant-api'
+  - 'shared'

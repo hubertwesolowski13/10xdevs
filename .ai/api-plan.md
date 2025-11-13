@@ -126,7 +126,7 @@ For each resource, the following endpoints are planned:
     - **Method:** GET
     - **Path:** `/creations`
     - **Description:** Retrieve a list of creations by the authenticated user.
-    - **Query Parameters:** Pagination, filtering by date, style, etc.
+    - **Query Parameters:** Pagination, filtering by date, style, status, etc.
     - **Success Response:** Array of creation objects.
 
 - **Create Creation (Manual)**
@@ -174,7 +174,14 @@ For each resource, the following endpoints are planned:
 - **Accept Creation**
     - **Method:** POST
     - **Path:** `/creations/{creation_id}/accept`
-    - **Description:** Accept a generated creation, moving it to the user’s saved creations collection.
+    - **Description:** Accept a generated creation, setting its status as `accepted`.
+    - **Success Response:** HTTP 200 with confirmation.
+    - **Error Responses:** HTTP 400 if the creation is invalid or not found.
+
+- **Reject Creation**
+    - **Method:** POST
+    - **Path:** `/creations/{creation_id}/reject`
+    - **Description:** Reject a generated creation, setting its status as `rejected`.
     - **Success Response:** HTTP 200 with confirmation.
     - **Error Responses:** HTTP 400 if the creation is invalid or not found.
 

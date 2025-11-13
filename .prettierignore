@@ -1,0 +1,15 @@
+# Dependencies
+node_modules
+
+# Build outputs
+**/dist
+**/build
+coverage
+.expo
+.expo-shared
+android/app/build
+ios/build
+
+# Generated
+**/*.min.*
+*.log

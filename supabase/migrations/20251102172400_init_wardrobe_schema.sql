@@ -20,7 +20,7 @@ create extension if not exists "uuid-ossp";
 
 -- 2.1 item_categories: dictionary of closet item categories
 create table if not exists public.item_categories (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default extensions.uuid_generate_v4(),
   name varchar(50) not null unique,
   display_name varchar(100) not null,
   is_required boolean not null default false
@@ -31,7 +31,7 @@ alter table public.item_categories enable row level security;
 
 -- 2.2 styles: dictionary of creation styles
 create table if not exists public.styles (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default extensions.uuid_generate_v4(),
   name varchar(50) not null unique,
   display_name varchar(100) not null
 );
@@ -56,7 +56,7 @@ alter table public.profiles enable row level security;
 
 -- wardrobe_items: clothing items owned by users
 create table if not exists public.wardrobe_items (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default extensions.uuid_generate_v4(),
   user_id uuid not null,
   category_id uuid not null,
   name varchar(100) not null,
@@ -74,24 +74,26 @@ alter table public.wardrobe_items enable row level security;
 
 -- creations: accepted outfits created by users
 create table if not exists public.creations (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default extensions.uuid_generate_v4(),
   user_id uuid not null,
   style_id uuid not null,
   name varchar(200) not null,
   image_path text not null,
+  status varchar(20) not null default 'pending', -- lifecycle status: pending | accepted | rejected
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint fk_creations_user
     foreign key (user_id) references auth.users(id) on delete cascade,
   constraint fk_creations_style
-    foreign key (style_id) references public.styles(id) on delete restrict
+    foreign key (style_id) references public.styles(id) on delete restrict,
+  constraint chk_creations_status check (status in ('pending','accepted','rejected'))
 );
 
 alter table public.creations enable row level security;
 
 -- creation_items: m2m join between creations and wardrobe_items
 create table if not exists public.creation_items (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default extensions.uuid_generate_v4(),
   creation_id uuid not null,
   item_id uuid not null,
   constraint fk_creation_items_creation
@@ -107,18 +109,18 @@ alter table public.creation_items enable row level security;
 
 -- note: use on conflict do nothing to keep migration idempotent on re-run
 insert into public.item_categories (id, name, display_name, is_required) values
-  (uuid_generate_v4(), 'okrycie_glowy', 'okrycie głowy', false),
-  (uuid_generate_v4(), 'okrycie_gorne', 'okrycie górne', true),
-  (uuid_generate_v4(), 'okrycie_dolne', 'okrycie dolne', true),
-  (uuid_generate_v4(), 'buty', 'buty', true)
+  (extensions.uuid_generate_v4(), 'okrycie_glowy', 'okrycie głowy', false),
+  (extensions.uuid_generate_v4(), 'okrycie_gorne', 'okrycie górne', true),
+  (extensions.uuid_generate_v4(), 'okrycie_dolne', 'okrycie dolne', true),
+  (extensions.uuid_generate_v4(), 'buty', 'buty', true)
 on conflict (name) do nothing;
 
 insert into public.styles (id, name, display_name) values
-  (uuid_generate_v4(), 'casual', 'casual'),
-  (uuid_generate_v4(), 'elegancki', 'elegancki'),
-  (uuid_generate_v4(), 'plazowy', 'plażowy'),
-  (uuid_generate_v4(), 'sexy', 'sexy'),
-  (uuid_generate_v4(), 'wieczorowy', 'wieczorowy')
+  (extensions.uuid_generate_v4(), 'casual', 'casual'),
+  (extensions.uuid_generate_v4(), 'elegancki', 'elegancki'),
+  (extensions.uuid_generate_v4(), 'plazowy', 'plażowy'),
+  (extensions.uuid_generate_v4(), 'sexy', 'sexy'),
+  (extensions.uuid_generate_v4(), 'wieczorowy', 'wieczorowy')
 on conflict (name) do nothing;
 
 -- 6) indices ---------------------------------------------------------------------
@@ -128,6 +130,7 @@ create index if not exists idx_wardrobe_items_user_id on public.wardrobe_items(u
 create index if not exists idx_wardrobe_items_category_id on public.wardrobe_items(category_id);
 create index if not exists idx_creations_user_id on public.creations(user_id);
 create index if not exists idx_creations_style_id on public.creations(style_id);
+create index if not exists idx_creations_user_status_created_at on public.creations(user_id, status, created_at desc);
 create index if not exists idx_creation_items_creation_id on public.creation_items(creation_id);
 create index if not exists idx_creation_items_item_id on public.creation_items(item_id);
 

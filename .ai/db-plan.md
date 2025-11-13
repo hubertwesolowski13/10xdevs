@@ -74,7 +74,7 @@ Tabela przechowująca elementy garderoby użytkowników.
 ---
 
 ### 1.5. `public.creations`
-Tabela przechowująca zaakceptowane kreacje użytkowników.
+Tabela przechowująca propozycje i zaakceptowane kreacje użytkowników. Status kreacji określa jej cykl życia.
 
 | Kolumna | Typ danych | Ograniczenia | Opis |
 |---------|-----------|--------------|------|
@@ -83,6 +83,7 @@ Tabela przechowująca zaakceptowane kreacje użytkowników.
 | `style_id` | UUID | NOT NULL | Identyfikator stylu |
 | `name` | VARCHAR(200) | NOT NULL | Automatycznie generowana nazwa kreacji |
 | `image_path` | TEXT | NOT NULL | Ścieżka do obrazu PNG w Supabase Storage |
+| `status` | VARCHAR(20) | NOT NULL, DEFAULT 'pending' | Status cyklu życia kreacji: `pending` (propozycja), `accepted` (zaakceptowana), `rejected` (odrzucona) |
 | `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Data utworzenia kreacji |
 | `updated_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Data ostatniej aktualizacji |
 
@@ -162,6 +163,8 @@ CREATE INDEX idx_wardrobe_items_category_id ON public.wardrobe_items(category_id
 -- Tabela creations
 CREATE INDEX idx_creations_user_id ON public.creations(user_id);
 CREATE INDEX idx_creations_style_id ON public.creations(style_id);
+-- Kompozytowy indeks pod filtrowanie po statusie i sortowanie po dacie tworzenia
+CREATE INDEX idx_creations_user_status_created_at ON public.creations(user_id, status, created_at DESC);
 
 -- Tabela creation_items
 CREATE INDEX idx_creation_items_creation_id ON public.creation_items(creation_id);
@@ -491,6 +494,25 @@ USING (
 - Struktura umożliwia łatwe dodanie nowych funkcji (np. tagów, kolorów jako osobna tabela)
 - Kolumny `created_at` i `updated_at` ułatwiają audyt i sortowanie chronologiczne
 - Możliwość przyszłej integracji z systemem rekomendacji AI
+
+### 7.9. Status kreacji i przepływy akceptacji
+- Kolumna `public.creations.status` posiada dopuszczalne wartości: `pending`, `accepted`, `rejected` (domyślnie `pending`).
+- UI powinien filtrować listę "zapisanych" kreacji po `status = 'accepted'`.
+- Przykładowe zapytanie listujące zaakceptowane kreacje zalogowanego użytkownika:
+```sql
+select id, name, image_path, style_id, status, created_at
+from public.creations
+where user_id = auth.uid() and status = 'accepted'
+order by created_at desc;
+```
+- Endpoint akceptacji: `POST /creations/{creation_id}/accept` powinien wykonać aktualizację statusu:
+```sql
+update public.creations
+set status = 'accepted'
+where id = :creation_id and user_id = auth.uid();
+```
+- Analogicznie, odrzucenie może ustawić `status = 'rejected'`.
+- Dla wydajności dodano indeks kompozytowy `(user_id, status, created_at desc)`.
 
 ---
 

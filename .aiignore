@@ -1,0 +1,18 @@
+# Ignore Maven wrapper files
+.mvn/
+
+# Ignore project files
+.idea/
+*.iml
+
+# Ignore test reports and test directories
+test-results/
+allure-results/
+
+# Ignore logs and temporary files
+logs/
+*.log
+*.tmp
+
+# Ignore env files
+.env
