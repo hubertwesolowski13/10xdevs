@@ -7,6 +7,7 @@ import { CreationsModule } from './creations/creations.module'
 import { SupabaseModule } from './supabase/supabase.module'
 import { AdminModule } from './admin/admin.module'
 import { AuthModule } from './auth/auth.module'
+import { ProfilesModule } from './profiles/profiles.module'
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AuthModule } from './auth/auth.module'
     AdminModule,
     SupabaseModule,
     CreationsModule,
+    ProfilesModule,
     AuthModule,
   ],
   controllers: [AppController],

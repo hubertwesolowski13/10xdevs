@@ -5,6 +5,8 @@
 // and are used to enforce type-safety and consistency in the API layer.
 
 import type { Database } from './database'
+import type { Request as ExpressRequest } from 'express'
+import type { User } from '@supabase/supabase-js'
 
 // Convenience types to extract Row types from the database schema tables.
 type ProfilesRow = Database['public']['Tables']['profiles']['Row']
@@ -86,5 +88,11 @@ export type AddWardrobeItemToCreationCommand = {
 // Typically the creation_id will be passed in the URL path, so this command can be empty.
 // Provided here for consistency, it can be extended if additional payload is needed in future.
 export type AcceptCreationCommand = Record<string, never>
+
+// 15. Authenticated Request - wrapper type for authenticated requests.
+// This type is used to enforce that all API endpoints require authentication.
+export interface AuthenticatedRequest extends ExpressRequest {
+  user?: User | null
+}
 
 // End of DTO and Command Model definitions.

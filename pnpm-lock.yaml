@@ -52,7 +52,11 @@ importers:
         specifier: ^8.20.0
         version: 8.46.2(eslint@9.38.0)(typescript@5.9.3)
 
-  shared: {}
+  shared:
+    dependencies:
+      '@types/express':
+        specifier: ^5.0.0
+        version: 5.0.5
 
   wardrobe-assistant-api:
     dependencies:

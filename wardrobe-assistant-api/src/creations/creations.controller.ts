@@ -1,21 +1,17 @@
-import { Controller, Post, Body, Param, HttpCode, HttpStatus, Request, ParseUUIDPipe } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
+import { Controller, Post, Body, Param, HttpCode, HttpStatus, Request, ParseUUIDPipe, UseGuards } from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
 import { GenerateCreationsDto } from './dto/generate-creations.dto'
 import { CreationsService } from './creations.service'
-import { MOCK_USER_ID } from '../../mocks/user'
-import type { User } from '@supabase/supabase-js'
-import type { Request as ExpressRequest } from 'express'
-
-interface AuthenticatedRequest extends ExpressRequest {
-  // Supabase User object placed by auth middleware/guard
-  user?: User | null
-}
+import type { AuthenticatedRequest } from 'shared/src/types/dto.ts'
+import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 
 /**
  * Controller for handling creation-related endpoints.
  * All endpoints require authentication.
  */
 @ApiTags('creations')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('creations')
 export class CreationsController {
   constructor(private readonly creationsService: CreationsService) {}
@@ -48,9 +44,8 @@ export class CreationsController {
     description: 'Not found - style does not exist',
   })
   async generateCreations(@Body() generateCreationsDto: GenerateCreationsDto, @Request() req: AuthenticatedRequest) {
-    // Extract user ID from the authenticated request
-    // In a real implementation, this would come from a JWT guard
-    const userId: string = req.user?.id || MOCK_USER_ID
+    // Extract user ID from the authenticated request (set by JwtAuthGuard)
+    const userId: string = req.user!.id
 
     return this.creationsService.generateCreations(generateCreationsDto.style_id, userId)
   }
@@ -86,8 +81,7 @@ export class CreationsController {
     @Param('creationId', new ParseUUIDPipe({ version: '4' })) creationId: string,
     @Request() req: AuthenticatedRequest,
   ) {
-    // Extract user ID from the authenticated request
-    const userId = req.user?.id || MOCK_USER_ID
+    const userId = req.user!.id
 
     await this.creationsService.acceptCreation(creationId, userId)
     return { message: 'Creation accepted successfully' }
@@ -124,8 +118,7 @@ export class CreationsController {
     @Param('creationId', new ParseUUIDPipe({ version: '4' })) creationId: string,
     @Request() req: AuthenticatedRequest,
   ) {
-    // Extract user ID from the authenticated request
-    const userId = req.user?.id || MOCK_USER_ID
+    const userId = req.user!.id
 
     await this.creationsService.rejectCreation(creationId, userId)
     return { message: 'Creation rejected successfully' }
