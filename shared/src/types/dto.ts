@@ -48,8 +48,8 @@ export type CreationItemDTO = Pick<CreationItemsRow, 'id' | 'creation_id' | 'ite
 export type RegisterUserCommand = {
   email: string
   password: string
-  additional_metadata: {
-    username: string
+  additional_metadata?: {
+    username?: string
   }
 }
 

@@ -6,6 +6,7 @@ import { AppService } from './app.service'
 import { CreationsModule } from './creations/creations.module'
 import { SupabaseModule } from './supabase/supabase.module'
 import { AdminModule } from './admin/admin.module'
+import { AuthModule } from './auth/auth.module'
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { AdminModule } from './admin/admin.module'
     AdminModule,
     SupabaseModule,
     CreationsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
