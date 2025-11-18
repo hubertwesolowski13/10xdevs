@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Param, HttpCode, HttpStatus, Request } from '@nestjs/common'
+import { Controller, Post, Body, Param, HttpCode, HttpStatus, Request, ParseUUIDPipe } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { GenerateCreationsDto } from './dto/generate-creations.dto'
 import { CreationsService } from './creations.service'
@@ -82,11 +82,52 @@ export class CreationsController {
     status: 404,
     description: 'Not found - creation does not exist',
   })
-  async acceptCreation(@Param('creationId') creationId: string, @Request() req: AuthenticatedRequest) {
+  async acceptCreation(
+    @Param('creationId', new ParseUUIDPipe({ version: '4' })) creationId: string,
+    @Request() req: AuthenticatedRequest,
+  ) {
     // Extract user ID from the authenticated request
     const userId = req.user?.id || MOCK_USER_ID
 
     await this.creationsService.acceptCreation(creationId, userId)
     return { message: 'Creation accepted successfully' }
+  }
+
+  /**
+   * Endpoint to reject a generated creation.
+   * Updates the creation status to 'rejected'.
+   *
+   * @param creationId - The UUID of the creation to reject
+   * @param req - Express request object containing user information
+   * @returns Success message
+   */
+  @Post(':creationId/reject')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reject a generated creation' })
+  @ApiResponse({
+    status: 200,
+    description: 'Creation successfully rejected',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - creation does not belong to user or invalid creationId',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - user not authenticated',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Not found - creation does not exist',
+  })
+  async rejectCreation(
+    @Param('creationId', new ParseUUIDPipe({ version: '4' })) creationId: string,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    // Extract user ID from the authenticated request
+    const userId = req.user?.id || MOCK_USER_ID
+
+    await this.creationsService.rejectCreation(creationId, userId)
+    return { message: 'Creation rejected successfully' }
   }
 }

@@ -108,6 +108,52 @@ export class CreationsService {
   }
 
   /**
+   * Rejects a generated creation by updating its status to 'rejected'.
+   *
+   * @param creationId - The UUID of the creation to reject
+   * @param userId - The authenticated user's ID
+   * @throws NotFoundException if the creation doesn't exist
+   * @throws BadRequestException if the creation doesn't belong to the user
+   */
+  async rejectCreation(creationId: string, userId: string): Promise<void> {
+    try {
+      // Verify the creation exists and belongs to the user
+      const { data: creation, error: fetchError } = await this.supabase
+        .from('creations')
+        .select('id, user_id, status')
+        .eq('id', creationId)
+        .single()
+
+      if (fetchError || !creation) {
+        throw new NotFoundException(`Creation with id ${creationId} not found`)
+      }
+
+      if (creation.user_id !== userId) {
+        throw new BadRequestException('You do not have permission to reject this creation')
+      }
+
+      // Update the creation status to 'rejected'
+      const { error: updateError } = await this.supabase
+        .from('creations')
+        .update({ status: 'rejected', updated_at: new Date().toISOString() })
+        .eq('id', creationId)
+
+      if (updateError) {
+        throw new InternalServerErrorException('Failed to reject the creation')
+      }
+    } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException ||
+        error instanceof InternalServerErrorException
+      ) {
+        throw error
+      }
+      throw new InternalServerErrorException('An error occurred while rejecting the creation')
+    }
+  }
+
+  /**
    * Verifies that the user has all required wardrobe items.
    * Required items are determined by the item_categories table where is_required = true.
    *
