@@ -30,6 +30,7 @@ export default [
       '**/eslint.config.*',
       '**/supabase/**',
       'shared/src/types/database.ts',
+      'wardrobe-assistant-api/**/*.spec.ts',
     ],
   },
 

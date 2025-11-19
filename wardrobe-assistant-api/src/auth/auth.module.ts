@@ -5,11 +5,12 @@ import { AuthService } from './auth.service'
 import { SupabaseModule } from '../supabase/supabase.module'
 import { JwtAuthGuard } from './jwt-auth.guard'
 import { JwtOrAdminGuard } from './jwt-or-admin.guard'
+import { AdminGuard } from './admin.guard'
 
 @Module({
   imports: [SupabaseModule, ConfigModule],
   controllers: [AuthController],
-  providers: [AuthService, JwtAuthGuard, JwtOrAdminGuard],
-  exports: [AuthService, JwtAuthGuard, JwtOrAdminGuard],
+  providers: [AuthService, JwtAuthGuard, JwtOrAdminGuard, AdminGuard],
+  exports: [AuthService, JwtAuthGuard, JwtOrAdminGuard, AdminGuard],
 })
 export class AuthModule {}

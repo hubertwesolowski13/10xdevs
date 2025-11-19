@@ -1,8 +1,9 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common'
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { AuthService } from './auth.service'
 import { RegisterUserDto } from './dto/register-user.dto'
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator'
+import type { ProfileDTO } from 'shared/src/types/dto'
 
 class LoginUserDto {
   @IsEmail()
@@ -26,10 +27,21 @@ export class AuthController {
   @Post('signup')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Register a new user' })
-  @ApiResponse({ status: 201, description: 'User registered successfully' })
+  @ApiBody({ type: RegisterUserDto })
+  @ApiCreatedResponse({
+    description: 'User registered successfully',
+    schema: {
+      example: {
+        id: '9d7c5f3a-1234-4567-8901-abcdefabcdef',
+        username: 'user123',
+        created_at: '2025-01-01T12:00:00.000Z',
+        updated_at: '2025-01-01T12:00:00.000Z',
+      },
+    },
+  })
   @ApiResponse({ status: 400, description: 'Validation error or username already taken' })
   @ApiResponse({ status: 500, description: 'Server error' })
-  async signup(@Body() body: RegisterUserDto) {
+  async signup(@Body() body: RegisterUserDto): Promise<ProfileDTO> {
     const result = await this.authService.signup(body)
     return result
   }
@@ -41,11 +53,32 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login user with email and password' })
-  @ApiResponse({ status: 200, description: 'Login successful' })
+  @ApiBody({
+    type: LoginUserDto,
+    examples: {
+      default: {
+        value: { email: 'user@example.com', password: 'StrongPass123' },
+      },
+    },
+  })
+  @ApiOkResponse({
+    description: 'Login successful',
+    schema: {
+      example: {
+        access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        profile: {
+          id: '9d7c5f3a-1234-4567-8901-abcdefabcdef',
+          username: 'user123',
+          created_at: '2025-01-01T12:00:00.000Z',
+          updated_at: '2025-01-01T12:00:00.000Z',
+        },
+      },
+    },
+  })
   @ApiResponse({ status: 400, description: 'Validation error' })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   @ApiResponse({ status: 500, description: 'Server error' })
-  async login(@Body() body: LoginUserDto) {
+  async login(@Body() body: LoginUserDto): Promise<{ access_token: string; profile: ProfileDTO }> {
     const result = await this.authService.login(body)
     return result
   }

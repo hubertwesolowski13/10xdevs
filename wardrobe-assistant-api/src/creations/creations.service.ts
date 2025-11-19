@@ -64,10 +64,17 @@ export class CreationsService {
   /**
    * Accepts a generated creation by updating its status to 'accepted'.
    *
+   * Business rules and validations:
+   * - The creation must exist; otherwise a NotFoundException is thrown (HTTP 404).
+   * - The creation must belong to the calling user; otherwise a BadRequestException is thrown (HTTP 400).
+   * - On persistence/update issues an InternalServerErrorException is thrown (HTTP 500).
+   * - The method updates `status` and touch `updated_at` to the current timestamp.
+   *
    * @param creationId - The UUID of the creation to accept
    * @param userId - The authenticated user's ID
    * @throws NotFoundException if the creation doesn't exist
    * @throws BadRequestException if the creation doesn't belong to the user
+   * @throws InternalServerErrorException if the database update fails or an unexpected error occurs
    */
   async acceptCreation(creationId: string, userId: string): Promise<void> {
     try {
@@ -110,10 +117,17 @@ export class CreationsService {
   /**
    * Rejects a generated creation by updating its status to 'rejected'.
    *
+   * Business rules and validations:
+   * - The creation must exist; otherwise a NotFoundException is thrown (HTTP 404).
+   * - The creation must belong to the calling user; otherwise a BadRequestException is thrown (HTTP 400).
+   * - On persistence/update issues an InternalServerErrorException is thrown (HTTP 500).
+   * - The method updates `status` and touch `updated_at` to the current timestamp.
+   *
    * @param creationId - The UUID of the creation to reject
    * @param userId - The authenticated user's ID
    * @throws NotFoundException if the creation doesn't exist
    * @throws BadRequestException if the creation doesn't belong to the user
+   * @throws InternalServerErrorException if the database update fails or an unexpected error occurs
    */
   async rejectCreation(creationId: string, userId: string): Promise<void> {
     try {

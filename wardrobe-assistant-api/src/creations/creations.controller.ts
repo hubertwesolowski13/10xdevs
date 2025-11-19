@@ -43,6 +43,10 @@ export class CreationsController {
     status: 404,
     description: 'Not found - style does not exist',
   })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal Server Error - unexpected error during generation',
+  })
   async generateCreations(@Body() generateCreationsDto: GenerateCreationsDto, @Request() req: AuthenticatedRequest) {
     // Extract user ID from the authenticated request (set by JwtAuthGuard)
     const userId: string = req.user!.id
@@ -54,6 +58,11 @@ export class CreationsController {
    * Endpoint to accept a generated creation.
    * Updates the creation status to 'accepted'.
    *
+   * Notes:
+   * - The request body is intentionally empty; the `creationId` is provided via the URL path.
+   * - Kept symmetrical with the reject endpoint and the empty command model for forward compatibility.
+   *
+   * @see AcceptCreationCommand - empty payload maintained for consistency and future extensibility
    * @param creationId - The UUID of the creation to accept
    * @param req - Express request object containing user information
    * @returns Success message
@@ -64,6 +73,7 @@ export class CreationsController {
   @ApiResponse({
     status: 200,
     description: 'Creation successfully accepted',
+    schema: { example: { message: 'Creation accepted successfully' } },
   })
   @ApiResponse({
     status: 400,
@@ -76,6 +86,10 @@ export class CreationsController {
   @ApiResponse({
     status: 404,
     description: 'Not found - creation does not exist',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal Server Error - unexpected error during acceptance',
   })
   async acceptCreation(
     @Param('creationId', new ParseUUIDPipe({ version: '4' })) creationId: string,
@@ -91,6 +105,11 @@ export class CreationsController {
    * Endpoint to reject a generated creation.
    * Updates the creation status to 'rejected'.
    *
+   * Notes:
+   * - The request body is intentionally empty; the `creationId` is provided via the URL path.
+   * - Mirrors the accept endpoint contract for consistency with the empty command model.
+   *
+   * @see AcceptCreationCommand - explains rationale for empty payload
    * @param creationId - The UUID of the creation to reject
    * @param req - Express request object containing user information
    * @returns Success message
@@ -101,6 +120,7 @@ export class CreationsController {
   @ApiResponse({
     status: 200,
     description: 'Creation successfully rejected',
+    schema: { example: { message: 'Creation rejected successfully' } },
   })
   @ApiResponse({
     status: 400,
@@ -113,6 +133,10 @@ export class CreationsController {
   @ApiResponse({
     status: 404,
     description: 'Not found - creation does not exist',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal Server Error - unexpected error during rejection',
   })
   async rejectCreation(
     @Param('creationId', new ParseUUIDPipe({ version: '4' })) creationId: string,

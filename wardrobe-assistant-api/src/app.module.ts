@@ -8,6 +8,8 @@ import { SupabaseModule } from './supabase/supabase.module'
 import { AdminModule } from './admin/admin.module'
 import { AuthModule } from './auth/auth.module'
 import { ProfilesModule } from './profiles/profiles.module'
+import { ItemCategoriesModule } from './item-categories/item-categories.module'
+import { StylesModule } from './styles/styles.module'
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { ProfilesModule } from './profiles/profiles.module'
     CreationsModule,
     ProfilesModule,
     AuthModule,
+    ItemCategoriesModule,
+    StylesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
