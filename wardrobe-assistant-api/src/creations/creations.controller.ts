@@ -1,9 +1,23 @@
-import { Controller, Post, Body, Param, HttpCode, HttpStatus, Request, ParseUUIDPipe, UseGuards } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  HttpCode,
+  HttpStatus,
+  Request,
+  ParseUUIDPipe,
+  UseGuards,
+  Get,
+  Query,
+} from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse } from '@nestjs/swagger'
 import { GenerateCreationsDto } from './dto/generate-creations.dto'
 import { CreationsService } from './creations.service'
 import type { AuthenticatedRequest } from 'shared/src/types/dto'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
+import { CreateCreationDto } from './dto/create-creation.dto'
+import { ListCreationsQuery } from './dto/list-creations.query'
 
 /**
  * Controller for handling creation-related endpoints.
@@ -15,6 +29,91 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 @Controller('creations')
 export class CreationsController {
   constructor(private readonly creationsService: CreationsService) {}
+
+  /**
+   * GET /creations — listuje kreacje zalogowanego użytkownika z paginacją i filtrami.
+   */
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'List creations of the authenticated user' })
+  @ApiResponse({
+    status: 200,
+    description: 'List returned',
+    schema: {
+      example: [
+        {
+          id: 'a1b2c3d4-e5f6-4789-abcd-0123456789ab',
+          name: 'Casual Friday',
+          image_path: '/images/creations/casual_friday.png',
+          style_id: '123e4567-e89b-12d3-a456-426614174000',
+          status: 'pending',
+          created_at: '2025-11-19T22:15:00.000Z',
+          updated_at: '2025-11-19T22:15:00.000Z',
+          user_id: 'user-uuid-1234',
+        },
+      ],
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 500, description: 'Server error' })
+  async list(@Query() query: ListCreationsQuery, @Request() req: AuthenticatedRequest) {
+    const userId = req.user!.id
+    return this.creationsService.list(userId, query)
+  }
+
+  /**
+   * POST /creations — manually creates a new creation for the authenticated user.
+   *
+   * Business flow:
+   * - Validates payload (style_id UUID v4, non-empty name, non-empty image_path)
+   * - Verifies style existence
+   * - Persists creation with status 'pending'
+   * - Returns created CreationDTO with 201 status
+   */
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a new creation manually' })
+  @ApiBody({
+    description: 'Payload for creating a new creation',
+    schema: {
+      example: {
+        style_id: '123e4567-e89b-12d3-a456-426614174000',
+        name: 'Casual Friday',
+        image_path: '/images/creations/casual_friday.png',
+      },
+    },
+  })
+  @ApiCreatedResponse({
+    description: 'Creation created successfully',
+    schema: {
+      example: {
+        id: 'a1b2c3d4-e5f6-4789-abcd-0123456789ab',
+        name: 'Casual Friday',
+        image_path: '/images/creations/casual_friday.png',
+        style_id: '123e4567-e89b-12d3-a456-426614174000',
+        status: 'pending',
+        created_at: '2025-11-19T22:15:00.000Z',
+        updated_at: '2025-11-19T22:15:00.000Z',
+        user_id: 'user-uuid-1234',
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Bad request - invalid input data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - user not authenticated' })
+  @ApiResponse({ status: 404, description: 'Not found - style does not exist' })
+  @ApiResponse({ status: 409, description: 'Conflict - creation name already exists for this user' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error - failed to create creation' })
+  async createCreation(@Body() dto: CreateCreationDto, @Request() req: AuthenticatedRequest) {
+    const userId = req.user!.id
+    return this.creationsService.createCreation(
+      {
+        style_id: dto.style_id,
+        name: dto.name,
+        image_path: dto.image_path,
+      },
+      userId,
+    )
+  }
 
   /**
    * Endpoint to generate creations via AI based on a style.

@@ -1,8 +1,15 @@
-import { Injectable, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common'
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  InternalServerErrorException,
+  ConflictException,
+} from '@nestjs/common'
 import { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from 'shared/src/types/database'
-import type { CreationDTO, WardrobeItemDTO } from 'shared/src/types/dto'
+import type { CreationDTO, WardrobeItemDTO, CreateCreationCommand } from 'shared/src/types/dto'
 import { SupabaseService } from '../supabase/supabase.service'
+import { UNIQUE_VIOLATION_CODE } from 'shared/src/constants/database'
 
 /**
  * Service responsible for handling creation generation and acceptance logic.
@@ -15,6 +22,149 @@ export class CreationsService {
   constructor(private readonly supabaseService: SupabaseService) {
     // Use the injected Supabase client via DI for testability and consistency
     this.supabase = this.supabaseService.client
+  }
+
+  /**
+   * Lists creations for the authenticated user with optional filters and pagination.
+   *
+   * - Always filters by user_id
+   * - Optional filters: status, style_id, search (name ilike)
+   * - Sorting: sort_by + order (default created_at desc)
+   * - Pagination: page, limit using Supabase range
+   */
+  async list(
+    userId: string,
+    query: {
+      page?: number
+      limit?: number
+      status?: string
+      style_id?: string
+      search?: string
+      sort_by?: 'created_at' | 'updated_at' | 'name' | 'status'
+      order?: 'asc' | 'desc'
+    },
+  ): Promise<CreationDTO[]> {
+    const page = query.page ?? 1
+    const limit = query.limit ?? 20
+    const sortBy = query.sort_by ?? 'created_at'
+    const order = query.order ?? 'desc'
+
+    const from = (page - 1) * limit
+    const to = from + limit - 1
+
+    try {
+      let builder = this.supabase
+        .from('creations')
+        .select('id, name, image_path, style_id, status, created_at, updated_at, user_id')
+        .eq('user_id', userId)
+
+      if (query.status) {
+        builder = builder.eq('status', query.status)
+      }
+      if (query.style_id) {
+        builder = builder.eq('style_id', query.style_id)
+      }
+      if (query.search) {
+        builder = builder.ilike('name', `%${query.search}%`)
+      }
+
+      // sorting
+      builder = builder.order(sortBy, { ascending: order === 'asc' })
+
+      // pagination
+      const { data, error } = await builder.range(from, to)
+
+      if (error) {
+        throw new InternalServerErrorException('Failed to list creations')
+      }
+
+      return (data ?? []) as unknown as CreationDTO[]
+    } catch (error) {
+      if (error instanceof InternalServerErrorException) {
+        throw error
+      }
+      throw new InternalServerErrorException('An error occurred while listing creations')
+    }
+  }
+
+  /**
+   * Creates a new creation manually for the authenticated user.
+   *
+   * Steps:
+   * - Validate style existence (404 if not found)
+   * - Insert a new row into public.creations with status 'pending'
+   * - Return the inserted row mapped to CreationDTO
+   *
+   * @param command - payload containing style_id, name, image_path
+   * @param userId - authenticated user's id
+   * @throws NotFoundException when style does not exist
+   * @throws InternalServerErrorException on database errors
+   */
+  async createCreation(command: CreateCreationCommand, userId: string): Promise<CreationDTO> {
+    const { style_id, name, image_path } = command
+
+    try {
+      // 0) Enforce per-user uniqueness of creation name (early guard)
+      const { data: existingByName, error: existingByNameError } = await this.supabase
+        .from('creations')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('name', name)
+        .maybeSingle()
+
+      if (existingByNameError) {
+        // If checking duplicates fails for any reason, treat as server error
+        throw new InternalServerErrorException('Failed to verify creation name uniqueness')
+      }
+
+      if (existingByName) {
+        throw new ConflictException('A creation with this name already exists for the user')
+      }
+
+      // 1) Ensure style exists
+      const { data: style, error: styleError } = await this.supabase
+        .from('styles')
+        .select('id')
+        .eq('id', style_id)
+        .single()
+
+      if (styleError || !style) {
+        throw new NotFoundException(`Style with id ${style_id} not found`)
+      }
+
+      // 2) Insert the creation with default status 'pending'
+      const { data: inserted, error: insertError } = await this.supabase
+        .from('creations')
+        .insert({
+          name,
+          image_path,
+          style_id,
+          user_id: userId,
+          status: 'pending',
+        })
+        .select('id, name, image_path, style_id, status, created_at, updated_at, user_id')
+        .single()
+
+      if (insertError || !inserted) {
+        const errorCode = insertError?.code
+
+        if (errorCode === UNIQUE_VIOLATION_CODE) {
+          throw new ConflictException('A creation with this name already exists for the user')
+        }
+        throw new InternalServerErrorException('Failed to create the creation')
+      }
+
+      return inserted as unknown as CreationDTO
+    } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof InternalServerErrorException ||
+        error instanceof ConflictException
+      ) {
+        throw error
+      }
+      throw new InternalServerErrorException('An error occurred while creating the creation')
+    }
   }
 
   /**
