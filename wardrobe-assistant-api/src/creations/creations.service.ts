@@ -4,10 +4,17 @@ import {
   NotFoundException,
   InternalServerErrorException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common'
 import { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from 'shared/src/types/database'
-import type { CreationDTO, WardrobeItemDTO, CreateCreationCommand } from 'shared/src/types/dto'
+import type {
+  CreationDTO,
+  WardrobeItemDTO,
+  CreateCreationCommand,
+  CreationItemDTO,
+  AddWardrobeItemToCreationCommand,
+} from 'shared/src/types/dto'
 import { SupabaseService } from '../supabase/supabase.service'
 import { UNIQUE_VIOLATION_CODE } from 'shared/src/constants/database'
 
@@ -84,6 +91,192 @@ export class CreationsService {
         throw error
       }
       throw new InternalServerErrorException('An error occurred while listing creations')
+    }
+  }
+
+  /**
+   * Lists wardrobe items linked to a given creation owned by the authenticated user.
+   *
+   * Steps:
+   * - Verify creation exists and belongs to the user (404 if not)
+   * - Select from public.creation_items filtered by creation_id
+   * - Return list of CreationItemDTO
+   */
+  async listCreationItems(
+    creationId: string,
+    userId: string,
+    query?: { page?: number; limit?: number; expand?: 'item'; includeTotal?: boolean },
+  ): Promise<
+    | CreationItemDTO[]
+    | (CreationItemDTO & { item: WardrobeItemDTO })[]
+    | {
+        items: CreationItemDTO[] | (CreationItemDTO & { item: WardrobeItemDTO })[]
+        total: number
+      }
+  > {
+    // Early validation handled at controller level via ParseUUIDPipe.
+    try {
+      // 1) Ensure the creation exists and belongs to the user
+      const { data: creation, error: creationError } = await this.supabase
+        .from('creations')
+        .select('id, user_id')
+        .eq('id', creationId)
+        .eq('user_id', userId)
+        .maybeSingle()
+
+      if (creationError) {
+        throw new InternalServerErrorException('Failed to verify creation ownership')
+      }
+
+      if (!creation) {
+        throw new NotFoundException('Creation not found')
+      }
+
+      // 2) Fetch linked items with optional pagination
+      const page = query?.page ?? 1
+      const limit = query?.limit ?? 20
+      const from = (page - 1) * limit
+      const to = from + limit - 1
+
+      const builder = this.supabase
+        .from('creation_items')
+        .select('id, creation_id, item_id', { count: query?.includeTotal ? 'exact' : undefined })
+        .eq('creation_id', creationId)
+
+      const { data, error, count } = await builder.range(from, to)
+
+      if (error) {
+        throw new InternalServerErrorException('Failed to list creation items')
+      }
+
+      const items = (data ?? []) as unknown as CreationItemDTO[]
+
+      // 3) Optionally expand wardrobe item details
+      if (query?.expand === 'item' && items.length > 0) {
+        const itemIds = items.map((ci) => ci.item_id)
+        const { data: wardrobeItems, error: itemsError } = await this.supabase
+          .from('wardrobe_items')
+          .select('id, category_id, name, color, brand, created_at, updated_at, user_id')
+          .in('id', itemIds)
+          .eq('user_id', userId)
+
+        if (itemsError) {
+          throw new InternalServerErrorException('Failed to expand wardrobe items')
+        }
+
+        const byId = new Map<string, WardrobeItemDTO>(
+          (wardrobeItems ?? []).map((wi) => [wi.id, wi as unknown as WardrobeItemDTO]),
+        )
+        const expanded = items.map((ci) => ({
+          ...ci,
+          item: byId.get(ci.item_id) as WardrobeItemDTO,
+        }))
+
+        if (query?.includeTotal) {
+          return { items: expanded, total: count ?? expanded.length }
+        }
+        return expanded
+      }
+
+      if (query?.includeTotal) {
+        return { items, total: count ?? items.length }
+      }
+      return items
+    } catch (error) {
+      if (error instanceof NotFoundException || error instanceof InternalServerErrorException) {
+        throw error
+      }
+      throw new InternalServerErrorException('An error occurred while listing creation items')
+    }
+  }
+
+  /**
+   * Creates an association between a creation and a wardrobe item for the authenticated user.
+   *
+   * Steps:
+   * - Validate the creation exists and belongs to the user
+   * - Validate the wardrobe item exists and belongs to the user
+   * - Validate relation via DB function can_add_to_creation (403 if false)
+   * - Insert into public.creation_items (handle unique violation as conflict)
+   * - Return inserted CreationItemDTO
+   */
+  async addWardrobeItemToCreation(
+    creationId: string,
+    command: AddWardrobeItemToCreationCommand,
+    userId: string,
+  ): Promise<CreationItemDTO> {
+    const { item_id } = command
+
+    try {
+      // 1) Ensure the creation exists and belongs to the user
+      const { data: creation, error: creationError } = await this.supabase
+        .from('creations')
+        .select('id, user_id')
+        .eq('id', creationId)
+        .eq('user_id', userId)
+        .maybeSingle()
+
+      if (creationError) {
+        throw new InternalServerErrorException('Failed to verify creation ownership')
+      }
+      if (!creation) {
+        throw new NotFoundException('Creation not found')
+      }
+
+      // 2) Ensure the wardrobe item exists and belongs to the user
+      const { data: item, error: itemError } = await this.supabase
+        .from('wardrobe_items')
+        .select('id, user_id')
+        .eq('id', item_id)
+        .eq('user_id', userId)
+        .maybeSingle()
+
+      if (itemError) {
+        throw new InternalServerErrorException('Failed to verify wardrobe item ownership')
+      }
+      if (!item) {
+        throw new NotFoundException('Wardrobe item not found')
+      }
+
+      // 3) Validate via DB function can_add_to_creation
+      const { data: canAdd, error: canAddError } = await this.supabase.rpc('can_add_to_creation', {
+        p_creation_id: creationId,
+        p_item_id: item_id,
+      })
+
+      if (canAddError) {
+        throw new InternalServerErrorException('Failed to validate relation')
+      }
+      if (!canAdd) {
+        // Business rule violation
+        throw new ForbiddenException('Item cannot be added to this creation')
+      }
+
+      // 4) Insert relation
+      const { data: inserted, error: insertError } = await this.supabase
+        .from('creation_items')
+        .insert({ creation_id: creationId, item_id })
+        .select('id, creation_id, item_id')
+        .single()
+
+      if (insertError || !inserted) {
+        if (insertError?.code === UNIQUE_VIOLATION_CODE) {
+          throw new ConflictException('This item is already added to the creation')
+        }
+        throw new InternalServerErrorException('Failed to add item to creation')
+      }
+
+      return inserted as unknown as CreationItemDTO
+    } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof ForbiddenException ||
+        error instanceof ConflictException ||
+        error instanceof InternalServerErrorException
+      ) {
+        throw error
+      }
+      throw new InternalServerErrorException('An error occurred while adding item to creation')
     }
   }
 
