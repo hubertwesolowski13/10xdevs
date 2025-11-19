@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module'
 import { ProfilesModule } from './profiles/profiles.module'
 import { ItemCategoriesModule } from './item-categories/item-categories.module'
 import { StylesModule } from './styles/styles.module'
+import { WardrobeItemsModule } from './wardrobe-items/wardrobe-items.module'
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { StylesModule } from './styles/styles.module'
     AuthModule,
     ItemCategoriesModule,
     StylesModule,
+    WardrobeItemsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

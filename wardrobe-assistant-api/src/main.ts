@@ -36,6 +36,7 @@ async function bootstrap() {
       .addTag('creations', 'Endpoints for generated outfit creations')
       .addTag('admin/item_categories', 'Admin endpoints for item categories')
       .addTag('admin/styles', 'Admin endpoints for styles')
+      .addTag('wardrobe_items', 'Endpoints for user wardrobe items')
       .build()
 
     const document = SwaggerModule.createDocument(app, config)

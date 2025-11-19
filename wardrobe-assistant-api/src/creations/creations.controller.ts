@@ -2,7 +2,7 @@ import { Controller, Post, Body, Param, HttpCode, HttpStatus, Request, ParseUUID
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
 import { GenerateCreationsDto } from './dto/generate-creations.dto'
 import { CreationsService } from './creations.service'
-import type { AuthenticatedRequest } from 'shared/src/types/dto.ts'
+import type { AuthenticatedRequest } from 'shared/src/types/dto'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 
 /**

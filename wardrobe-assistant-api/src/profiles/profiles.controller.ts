@@ -13,7 +13,7 @@ import {
 import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger'
 import { ProfilesService } from './profiles.service'
 import { UpdateProfileDto } from './dto/update-profile.dto'
-import type { AuthenticatedRequest } from 'shared/src/types/dto.ts'
+import type { AuthenticatedRequest } from 'shared/src/types/dto'
 import { JwtOrAdminGuard } from '../auth/jwt-or-admin.guard'
 
 @ApiTags('profiles')

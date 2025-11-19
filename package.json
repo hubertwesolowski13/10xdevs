@@ -1,6 +1,5 @@
 {
   "name": "wardrobe-assistant",
-  "main": "expo-router/entry",
   "private": true,
   "version": "1.0.0",
   "scripts": {
