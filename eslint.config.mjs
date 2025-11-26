@@ -31,6 +31,8 @@ export default [
       '**/supabase/**',
       'shared/src/types/database.ts',
       'wardrobe-assistant-api/**/*.spec.ts',
+      'wardrobe-assistant-app/components/ui/**', // gluestack ui components
+      'wardrobe-assistant-app/*.config.js',
     ],
   },
 

@@ -6,6 +6,13 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "env.d.ts"],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "wardrobe-assistant-app/.expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "env.d.ts"
+  ],
   "exclude": ["node_modules", "supabase/**", "wardrobe-assistant-api/**/*.spec.ts", "dist"]
 }

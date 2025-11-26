@@ -95,4 +95,12 @@ export interface AuthenticatedRequest extends ExpressRequest {
   user?: User | null
 }
 
+export interface ResponseMessage {
+  message: string
+}
+
+export interface SuccessResponse<T> extends ResponseMessage {
+  data: T
+}
+
 // End of DTO and Command Model definitions.

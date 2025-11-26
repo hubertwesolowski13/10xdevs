@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "start:app": "pnpm run --filter wardrobe-assistant-app expo start",
+    "start:app": "pnpm run --filter wardrobe-assistant-app start",
     "start:app:web": "pnpm run --filter wardrobe-assistant-app web",
     "start:app:android": "pnpm run --filter wardrobe-assistant-app android",
     "start:app:ios": "pnpm run --filter wardrobe-assistant-app ios",
@@ -18,7 +18,8 @@
     "db:start": "supabase start",
     "db:migrate": "supabase migration up",
     "db:anon": "supabase status -o env",
-    "db:generate-types": "supabase gen types typescript --local > shared/src/types/database.ts"
+    "db:generate-types": "supabase gen types typescript --local > shared/src/types/database.ts",
+    "shared:build": "pnpm run --filter shared build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.78.0"
@@ -37,6 +38,9 @@
     "supabase": "^2.54.11",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.20.0"
+  },
+  "resolutions": {
+    "react-native-svg": "15.12.1"
   },
   "packageManager": "pnpm@9.12.0"
 }
